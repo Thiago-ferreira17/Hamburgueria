@@ -1,5 +1,7 @@
 import * as Yup from 'yup';
 import Order from '../schemas/Order';
+import Product from '../models/Product';
+import Category from '../models/Category';
 
 class OrderController {
   async store(request, response) {
@@ -8,8 +10,8 @@ class OrderController {
         .required()
         .of(
           Yup.object().shape({
-            id: Yup.number.required(),
-            quantity: Yup.number.required(),
+            id: Yup.number().required(),
+            quantity: Yup.number().required(),
           }),
         ),
     });
@@ -22,6 +24,33 @@ class OrderController {
 
     const { name } = request.body;
 
+    const productsId = request.body.products.map((product) => product.id);
+
+    const updateProducts = await Product.findAll({
+      where: {
+        id: productsId,
+      },
+      include: [
+        {
+          model: Category,
+          as: 'category',
+          attributes: ['name'],
+        },
+      ],
+    });
+
+    const editedProduct = updateProducts.map((product) => {
+      const newProduct = {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        category: product.category.name,
+        url: product.url,
+      };
+
+      return newProduct;
+    });
+
     const order = {
       user: {
         id: request.userId,
@@ -29,7 +58,7 @@ class OrderController {
       },
     };
 
-    return response.json(request.body);
+    return response.json(editedProduct);
   }
 }
 

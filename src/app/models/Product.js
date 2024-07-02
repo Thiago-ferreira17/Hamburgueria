@@ -23,7 +23,7 @@ class Product extends Model {
 
   static associate(models) {
     this.belongsTo(models.Category, {
-      foreignKey: 'categoru_id',
+      foreignKey: 'category_id',
       as: 'category',
     });
   }
